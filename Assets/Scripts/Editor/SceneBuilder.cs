@@ -190,7 +190,8 @@ public class SceneBuilder : Editor
         GameObject canvas = CreateCanvas();
 
         // Background
-        CreateFullScreenImage(canvas.transform, "Background", PinkBackground);
+        var bgObj = CreateFullScreenImage(canvas.transform, "Background", PinkBackground);
+        var bgImage = bgObj.GetComponent<Image>();
 
         // Title
         CreateText(canvas.transform, "TitleText", "五十音甜點大冒險", 48, DarkBrown,
@@ -237,6 +238,7 @@ public class SceneBuilder : Editor
         so.FindProperty("player2NameInput").objectReferenceValue = p2Input.GetComponent<InputField>();
         so.FindProperty("player2NameGroup").objectReferenceValue = p2Group;
         so.FindProperty("startGameButton").objectReferenceValue = startBtn.GetComponent<Button>();
+        so.FindProperty("backgroundImage").objectReferenceValue = bgImage;
         so.ApplyModifiedProperties();
 
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/MainMenu.unity");

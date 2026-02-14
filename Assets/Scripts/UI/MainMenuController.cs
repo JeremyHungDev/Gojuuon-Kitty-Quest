@@ -14,6 +14,9 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private GameObject player2NameGroup;
     [SerializeField] private Button startGameButton;
 
+    [Header("Background")]
+    [SerializeField] private Image backgroundImage;
+
     private bool isTwoPlayer = false;
 
     private void Start()
@@ -22,6 +25,18 @@ public class MainMenuController : MonoBehaviour
         singlePlayerButton.onClick.AddListener(OnSinglePlayerClicked);
         twoPlayerButton.onClick.AddListener(OnTwoPlayerClicked);
         startGameButton.onClick.AddListener(OnStartGameClicked);
+        LoadBackground();
+    }
+
+    private void LoadBackground()
+    {
+        var sprite = Resources.Load<Sprite>("Backgrounds/MainMenu");
+        if (sprite != null && backgroundImage != null)
+        {
+            backgroundImage.sprite = sprite;
+            backgroundImage.color = Color.white;
+            backgroundImage.preserveAspect = false;
+        }
     }
 
     private void OnSinglePlayerClicked()
