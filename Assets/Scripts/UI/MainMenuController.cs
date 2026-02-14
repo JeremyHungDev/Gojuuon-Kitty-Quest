@@ -3,16 +3,25 @@ using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
 {
-    [Header("Buttons")]
+    [Header("Main Buttons")]
+    [SerializeField] private Button continueButton;
+    [SerializeField] private Button startNewGameButton;
+    [SerializeField] private Button settingsButton;
+    [SerializeField] private Button exitButton;
+
+    [Header("New Game Panel")]
+    [SerializeField] private GameObject newGamePanel;
     [SerializeField] private Button singlePlayerButton;
     [SerializeField] private Button twoPlayerButton;
-
-    [Header("Player Name Input")]
-    [SerializeField] private GameObject nameInputPanel;
     [SerializeField] private InputField player1NameInput;
     [SerializeField] private InputField player2NameInput;
     [SerializeField] private GameObject player2NameGroup;
-    [SerializeField] private Button startGameButton;
+    [SerializeField] private Button confirmStartButton;
+    [SerializeField] private Button cancelNewGameButton;
+
+    [Header("Settings Panel")]
+    [SerializeField] private GameObject settingsPanel;
+    [SerializeField] private Button closeSettingsButton;
 
     [Header("Background")]
     [SerializeField] private Image backgroundImage;
@@ -21,10 +30,29 @@ public class MainMenuController : MonoBehaviour
 
     private void Start()
     {
-        nameInputPanel.SetActive(false);
+        newGamePanel.SetActive(false);
+        settingsPanel.SetActive(false);
+
+        // Check if save exists to enable Continue
+        var gm = GameManager.Instance;
+        bool hasSave = gm != null && gm.SaveSystem.HasSaveFile();
+        continueButton.interactable = hasSave;
+
+        // Main buttons
+        continueButton.onClick.AddListener(OnContinueClicked);
+        startNewGameButton.onClick.AddListener(OnStartNewGameClicked);
+        settingsButton.onClick.AddListener(OnSettingsClicked);
+        exitButton.onClick.AddListener(OnExitClicked);
+
+        // New Game panel buttons
         singlePlayerButton.onClick.AddListener(OnSinglePlayerClicked);
         twoPlayerButton.onClick.AddListener(OnTwoPlayerClicked);
-        startGameButton.onClick.AddListener(OnStartGameClicked);
+        confirmStartButton.onClick.AddListener(OnConfirmStartClicked);
+        cancelNewGameButton.onClick.AddListener(OnCancelNewGameClicked);
+
+        // Settings panel
+        closeSettingsButton.onClick.AddListener(OnCloseSettingsClicked);
+
         LoadBackground();
     }
 
@@ -32,7 +60,6 @@ public class MainMenuController : MonoBehaviour
     {
         if (backgroundImage == null) return;
 
-        // Try loading as Sprite first
         var sprite = Resources.Load<Sprite>("Backgrounds/MainMenu");
         if (sprite != null)
         {
@@ -41,7 +68,6 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
-        // Fallback: load as Texture2D and convert to Sprite
         var tex = Resources.Load<Texture2D>("Backgrounds/MainMenu");
         if (tex != null)
         {
@@ -52,28 +78,70 @@ public class MainMenuController : MonoBehaviour
         }
     }
 
-    private void OnSinglePlayerClicked()
+    // === Main Menu ===
+
+    private void OnContinueClicked()
     {
+        PlayButtonSFX();
+        var gm = GameManager.Instance;
+        gm.Load();
+        gm.StateManager.ChangeState(GameState.StageSelect);
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.LoadSceneWithFade("StageSelect");
+        else
+            gm.LoadScene("StageSelect");
+    }
+
+    private void OnStartNewGameClicked()
+    {
+        PlayButtonSFX();
         isTwoPlayer = false;
         player2NameGroup.SetActive(false);
-        nameInputPanel.SetActive(true);
+        player1NameInput.text = "";
+        player2NameInput.text = "";
+        newGamePanel.SetActive(true);
+    }
 
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.PlaySFX("button");
+    private void OnSettingsClicked()
+    {
+        PlayButtonSFX();
+        settingsPanel.SetActive(true);
+    }
+
+    private void OnExitClicked()
+    {
+        PlayButtonSFX();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    // === New Game Panel ===
+
+    private void OnSinglePlayerClicked()
+    {
+        PlayButtonSFX();
+        isTwoPlayer = false;
+        player2NameGroup.SetActive(false);
+        singlePlayerButton.interactable = false;
+        twoPlayerButton.interactable = true;
     }
 
     private void OnTwoPlayerClicked()
     {
+        PlayButtonSFX();
         isTwoPlayer = true;
         player2NameGroup.SetActive(true);
-        nameInputPanel.SetActive(true);
-
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.PlaySFX("button");
+        singlePlayerButton.interactable = true;
+        twoPlayerButton.interactable = false;
     }
 
-    private void OnStartGameClicked()
+    private void OnConfirmStartClicked()
     {
+        PlayButtonSFX();
         string player1Name = string.IsNullOrEmpty(player1NameInput.text)
             ? "Player 1" : player1NameInput.text;
 
@@ -97,5 +165,25 @@ public class MainMenuController : MonoBehaviour
             UIManager.Instance.LoadSceneWithFade("StageSelect");
         else
             gm.LoadScene("StageSelect");
+    }
+
+    private void OnCancelNewGameClicked()
+    {
+        PlayButtonSFX();
+        newGamePanel.SetActive(false);
+    }
+
+    // === Settings Panel ===
+
+    private void OnCloseSettingsClicked()
+    {
+        PlayButtonSFX();
+        settingsPanel.SetActive(false);
+    }
+
+    private void PlayButtonSFX()
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX("button");
     }
 }

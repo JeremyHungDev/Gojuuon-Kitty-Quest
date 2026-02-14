@@ -12,13 +12,15 @@ using System.IO;
 /// </summary>
 public class SceneBuilder : Editor
 {
-    private static readonly Color PinkBackground = new Color(1f, 0.714f, 0.757f, 1f);     // #FFB6C1
+    // Warm theme colors matching reference image
+    private static readonly Color WarmCream = new Color(1f, 0.96f, 0.88f, 1f);            // #FFF5E1
+    private static readonly Color ButtonCream = new Color(1f, 0.96f, 0.89f, 0.92f);       // Cream button bg
     private static readonly Color LightBlueBackground = new Color(0.714f, 0.843f, 1f, 1f); // #B6D7FF
     private static readonly Color CreamBackground = new Color(1f, 0.973f, 0.863f, 1f);     // #FFF8DC
     private static readonly Color PurpleCard = new Color(0.8f, 0.6f, 0.8f, 1f);            // #CC99CC
-    private static readonly Color SemiTransparentWhite = new Color(1f, 1f, 1f, 0.78f);
-    private static readonly Color SemiTransparentBlack = new Color(0f, 0f, 0f, 0.7f);
-    private static readonly Color DarkBrown = new Color(0.4f, 0.26f, 0.13f, 1f);
+    private static readonly Color OverlayDark = new Color(0f, 0f, 0f, 0.6f);
+    private static readonly Color DarkBrown = new Color(0.35f, 0.22f, 0.1f, 1f);          // #59381A
+    private static readonly Color PanelBrown = new Color(0.45f, 0.3f, 0.15f, 0.9f);
 
     [MenuItem("Tools/Gojuuon Kitty Quest/Build All Scenes")]
     public static void BuildAllScenes()
@@ -189,56 +191,114 @@ public class SceneBuilder : Editor
         // Create Canvas
         GameObject canvas = CreateCanvas();
 
-        // Background
-        var bgObj = CreateFullScreenImage(canvas.transform, "Background", PinkBackground);
+        // === Background (full screen, loads image at runtime) ===
+        var bgObj = CreateFullScreenImage(canvas.transform, "Background", WarmCream);
         var bgImage = bgObj.GetComponent<Image>();
 
-        // Title
-        CreateText(canvas.transform, "TitleText", "五十音甜點大冒險", 48, DarkBrown,
-            new Vector2(0, 200), new Vector2(600, 80));
+        // === Title Banner ===
+        var titleBanner = CreatePanel(canvas.transform, "TitleBanner", new Color(1, 0.97f, 0.92f, 0.85f),
+            new Vector2(0, 340), new Vector2(520, 120));
 
-        // Single Player Button
-        var singleBtn = CreateButton(canvas.transform, "SinglePlayerButton", "單人遊戲",
-            new Vector2(0, 50), new Vector2(300, 60));
+        CreateText(titleBanner.transform, "TitleText", "KITTY QUEST", 42, DarkBrown,
+            new Vector2(0, 15), new Vector2(480, 55));
+        CreateText(titleBanner.transform, "SubtitleText", "五十音甜點大冒險", 20, DarkBrown,
+            new Vector2(0, -30), new Vector2(400, 30));
 
-        // Two Player Button
-        var twoBtn = CreateButton(canvas.transform, "TwoPlayerButton", "雙人遊戲",
-            new Vector2(0, -30), new Vector2(300, 60));
+        // === Main Buttons (centered, lower area) ===
+        var continueBtn = CreateStyledButton(canvas.transform, "ContinueButton", "CONTINUE",
+            new Vector2(0, -80), new Vector2(380, 65), 28);
 
-        // Name Input Panel
-        var namePanel = CreatePanel(canvas.transform, "NameInputPanel", SemiTransparentWhite,
-            new Vector2(0, -100), new Vector2(500, 300));
-        namePanel.SetActive(false);
+        var startNewBtn = CreateStyledButton(canvas.transform, "StartNewGameButton", "START NEW GAME",
+            new Vector2(0, -170), new Vector2(380, 65), 28);
+
+        // === Bottom Bar (Settings + Exit) ===
+        var settingsBtn = CreateStyledButton(canvas.transform, "SettingsButton", "SETTINGS",
+            new Vector2(-160, -420), new Vector2(180, 45), 18);
+
+        var exitBtn = CreateStyledButton(canvas.transform, "ExitButton", "EXIT GAME",
+            new Vector2(160, -420), new Vector2(180, 45), 18);
+
+        // === New Game Panel (overlay, hidden by default) ===
+        var newGameOverlay = CreateFullScreenImage(canvas.transform, "NewGamePanel", OverlayDark);
+        var newGamePanel = CreatePanel(newGameOverlay.transform, "NewGameContent", new Color(1, 0.97f, 0.92f, 0.95f),
+            new Vector2(0, 0), new Vector2(500, 420));
+
+        CreateText(newGamePanel.transform, "NewGameTitle", "NEW GAME", 32, DarkBrown,
+            new Vector2(0, 160), new Vector2(400, 45));
+
+        // Mode selection buttons
+        var singleBtn = CreateStyledButton(newGamePanel.transform, "SinglePlayerButton", "單人模式",
+            new Vector2(-120, 90), new Vector2(200, 50), 22);
+        var twoBtn = CreateStyledButton(newGamePanel.transform, "TwoPlayerButton", "雙人模式",
+            new Vector2(120, 90), new Vector2(200, 50), 22);
 
         // Player 1 Input
-        var p1Input = CreateInputField(namePanel.transform, "Player1NameInput", "玩家1名稱",
-            new Vector2(0, 60), new Vector2(350, 40));
+        CreateText(newGamePanel.transform, "P1Label", "玩家 1 名稱", 18, DarkBrown,
+            new Vector2(0, 40), new Vector2(350, 25));
+        var p1Input = CreateInputField(newGamePanel.transform, "Player1NameInput", "輸入名稱...",
+            new Vector2(0, 10), new Vector2(350, 40));
 
         // Player 2 Name Group
         var p2Group = new GameObject("Player2NameGroup");
-        p2Group.transform.SetParent(namePanel.transform, false);
+        p2Group.transform.SetParent(newGamePanel.transform, false);
         var p2GroupRect = p2Group.AddComponent<RectTransform>();
-        p2GroupRect.sizeDelta = new Vector2(350, 40);
-        p2GroupRect.anchoredPosition = new Vector2(0, 0);
+        p2GroupRect.sizeDelta = new Vector2(350, 70);
+        p2GroupRect.anchoredPosition = new Vector2(0, -50);
 
-        var p2Input = CreateInputField(p2Group.transform, "Player2NameInput", "玩家2名稱",
-            new Vector2(0, 0), new Vector2(350, 40));
+        CreateText(p2Group.transform, "P2Label", "玩家 2 名稱", 18, DarkBrown,
+            new Vector2(0, 20), new Vector2(350, 25));
+        var p2Input = CreateInputField(p2Group.transform, "Player2NameInput", "輸入名稱...",
+            new Vector2(0, -10), new Vector2(350, 40));
 
-        // Start Game Button
-        var startBtn = CreateButton(namePanel.transform, "StartGameButton", "開始遊戲",
-            new Vector2(0, -80), new Vector2(200, 50));
+        // Confirm & Cancel buttons
+        var confirmBtn = CreateStyledButton(newGamePanel.transform, "ConfirmStartButton", "開始冒險！",
+            new Vector2(0, -130), new Vector2(250, 55), 24);
+        var cancelBtn = CreateStyledButton(newGamePanel.transform, "CancelNewGameButton", "取消",
+            new Vector2(0, -180), new Vector2(150, 40), 18);
 
-        // Add MainMenuController to Canvas
+        newGameOverlay.SetActive(false);
+
+        // === Settings Panel (overlay, hidden by default) ===
+        var settingsOverlay = CreateFullScreenImage(canvas.transform, "SettingsPanel", OverlayDark);
+        var settingsContent = CreatePanel(settingsOverlay.transform, "SettingsContent",
+            new Color(1, 0.97f, 0.92f, 0.95f), new Vector2(0, 0), new Vector2(450, 300));
+
+        CreateText(settingsContent.transform, "SettingsTitle", "SETTINGS", 32, DarkBrown,
+            new Vector2(0, 100), new Vector2(400, 45));
+        CreateText(settingsContent.transform, "SettingsPlaceholder", "設定功能開發中...", 20, DarkBrown,
+            new Vector2(0, 20), new Vector2(400, 30));
+        var closeSettingsBtn = CreateStyledButton(settingsContent.transform, "CloseSettingsButton", "關閉",
+            new Vector2(0, -80), new Vector2(180, 50), 22);
+
+        settingsOverlay.SetActive(false);
+
+        // === Wire up MainMenuController ===
         var controller = canvas.AddComponent<MainMenuController>();
         var so = new SerializedObject(controller);
+
+        // Main buttons
+        so.FindProperty("continueButton").objectReferenceValue = continueBtn.GetComponent<Button>();
+        so.FindProperty("startNewGameButton").objectReferenceValue = startNewBtn.GetComponent<Button>();
+        so.FindProperty("settingsButton").objectReferenceValue = settingsBtn.GetComponent<Button>();
+        so.FindProperty("exitButton").objectReferenceValue = exitBtn.GetComponent<Button>();
+
+        // New Game panel
+        so.FindProperty("newGamePanel").objectReferenceValue = newGameOverlay;
         so.FindProperty("singlePlayerButton").objectReferenceValue = singleBtn.GetComponent<Button>();
         so.FindProperty("twoPlayerButton").objectReferenceValue = twoBtn.GetComponent<Button>();
-        so.FindProperty("nameInputPanel").objectReferenceValue = namePanel;
         so.FindProperty("player1NameInput").objectReferenceValue = p1Input.GetComponent<InputField>();
         so.FindProperty("player2NameInput").objectReferenceValue = p2Input.GetComponent<InputField>();
         so.FindProperty("player2NameGroup").objectReferenceValue = p2Group;
-        so.FindProperty("startGameButton").objectReferenceValue = startBtn.GetComponent<Button>();
+        so.FindProperty("confirmStartButton").objectReferenceValue = confirmBtn.GetComponent<Button>();
+        so.FindProperty("cancelNewGameButton").objectReferenceValue = cancelBtn.GetComponent<Button>();
+
+        // Settings panel
+        so.FindProperty("settingsPanel").objectReferenceValue = settingsOverlay;
+        so.FindProperty("closeSettingsButton").objectReferenceValue = closeSettingsBtn.GetComponent<Button>();
+
+        // Background
         so.FindProperty("backgroundImage").objectReferenceValue = bgImage;
+
         so.ApplyModifiedProperties();
 
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/MainMenu.unity");
@@ -530,6 +590,53 @@ public class SceneBuilder : Editor
         return go;
     }
 
+    private static GameObject CreateStyledButton(Transform parent, string name, string label,
+        Vector2 position, Vector2 size, int fontSize)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+
+        var rect = go.AddComponent<RectTransform>();
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+
+        var image = go.AddComponent<Image>();
+        image.color = ButtonCream;
+
+        var button = go.AddComponent<Button>();
+        var colors = button.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1f, 0.93f, 0.82f, 1f);
+        colors.pressedColor = new Color(0.95f, 0.88f, 0.75f, 1f);
+        colors.disabledColor = new Color(0.7f, 0.7f, 0.7f, 0.5f);
+        button.colors = colors;
+
+        // Outline for border effect
+        var outline = go.AddComponent<Outline>();
+        outline.effectColor = new Color(0.55f, 0.38f, 0.2f, 0.6f);
+        outline.effectDistance = new Vector2(2, -2);
+
+        // Button text
+        var textObj = new GameObject("Text");
+        textObj.transform.SetParent(go.transform, false);
+
+        var textRect = textObj.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        var text = textObj.AddComponent<Text>();
+        text.text = label;
+        text.fontSize = fontSize;
+        text.fontStyle = FontStyle.Bold;
+        text.color = DarkBrown;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        return go;
+    }
+
     private static GameObject CreatePanel(Transform parent, string name, Color color,
         Vector2 position, Vector2 size)
     {
@@ -557,7 +664,7 @@ public class SceneBuilder : Editor
         rect.sizeDelta = size;
 
         var image = go.AddComponent<Image>();
-        image.color = new Color(0.95f, 0.95f, 0.95f, 1f);
+        image.color = new Color(1f, 0.98f, 0.94f, 1f);
 
         // Text area
         var textArea = new GameObject("Text");
