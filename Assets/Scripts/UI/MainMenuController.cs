@@ -30,12 +30,25 @@ public class MainMenuController : MonoBehaviour
 
     private void LoadBackground()
     {
+        if (backgroundImage == null) return;
+
+        // Try loading as Sprite first
         var sprite = Resources.Load<Sprite>("Backgrounds/MainMenu");
-        if (sprite != null && backgroundImage != null)
+        if (sprite != null)
         {
             backgroundImage.sprite = sprite;
             backgroundImage.color = Color.white;
-            backgroundImage.preserveAspect = false;
+            return;
+        }
+
+        // Fallback: load as Texture2D and convert to Sprite
+        var tex = Resources.Load<Texture2D>("Backgrounds/MainMenu");
+        if (tex != null)
+        {
+            sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),
+                new Vector2(0.5f, 0.5f));
+            backgroundImage.sprite = sprite;
+            backgroundImage.color = Color.white;
         }
     }
 
