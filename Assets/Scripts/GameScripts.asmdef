@@ -1,7 +1,9 @@
 {
   "name": "GameScripts",
   "rootNamespace": "",
-  "references": [],
+  "references": [
+    "UnityEngine.UI"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
