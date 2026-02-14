@@ -1,0 +1,64 @@
+{
+  "kanaList": [
+    {
+      "id": "a",
+      "hiragana": "あ",
+      "katakana": "ア",
+      "romaji": "a",
+      "origin": "安",
+      "originMeaning": "安靜",
+      "audioFile": "audio/kana/a.mp3",
+      "strokeOrder": [1, 2, 3],
+      "group": "a_row",
+      "level": 1
+    },
+    {
+      "id": "i",
+      "hiragana": "い",
+      "katakana": "イ",
+      "romaji": "i",
+      "origin": "以",
+      "originMeaning": "以前",
+      "audioFile": "audio/kana/i.mp3",
+      "strokeOrder": [1, 2],
+      "group": "a_row",
+      "level": 1
+    },
+    {
+      "id": "u",
+      "hiragana": "う",
+      "katakana": "ウ",
+      "romaji": "u",
+      "origin": "宇",
+      "originMeaning": "宇宙",
+      "audioFile": "audio/kana/u.mp3",
+      "strokeOrder": [1, 2],
+      "group": "a_row",
+      "level": 1
+    },
+    {
+      "id": "e",
+      "hiragana": "え",
+      "katakana": "エ",
+      "romaji": "e",
+      "origin": "衣",
+      "originMeaning": "衣服",
+      "audioFile": "audio/kana/e.mp3",
+      "strokeOrder": [1, 2],
+      "group": "a_row",
+      "level": 1
+    },
+    {
+      "id": "o",
+      "hiragana": "お",
+      "katakana": "オ",
+      "romaji": "o",
+      "origin": "於",
+      "originMeaning": "於是",
+      "audioFile": "audio/kana/o.mp3",
+      "strokeOrder": [1, 2, 3],
+      "group": "a_row",
+      "level": 1
+    }
+  ]
+}
