@@ -1,0 +1,48 @@
+{
+  "levels": [
+    {
+      "levelId": 1,
+      "name": "入門",
+      "sceneName": "KittyLivingRoom",
+      "description": "溫馨客廳",
+      "kanaGroups": ["a_row", "ka_row", "sa_row", "ta_row", "na_row"],
+      "reward": "蝴蝶結茶杯",
+      "rewardSprite": "sprites/rewards/bow_cup",
+      "unlockCondition": "none",
+      "minigames": ["stroke_practice", "dessert_catch", "card_match", "order_challenge"]
+    },
+    {
+      "levelId": 2,
+      "name": "進階",
+      "sceneName": "AppleForest",
+      "description": "蘋果森林花園",
+      "kanaGroups": ["ha_row", "ma_row", "ya_row", "ra_row", "wa_row"],
+      "reward": "蕾絲桌巾",
+      "rewardSprite": "sprites/rewards/lace_cloth",
+      "unlockCondition": "level_1_complete",
+      "minigames": ["stroke_practice", "dessert_catch", "card_match", "order_challenge"]
+    },
+    {
+      "levelId": 3,
+      "name": "大師",
+      "sceneName": "LondonStreet",
+      "description": "倫敦繁華街角",
+      "kanaGroups": ["dakuon", "handakuon"],
+      "reward": "五層大蛋糕",
+      "rewardSprite": "sprites/rewards/big_cake",
+      "unlockCondition": "level_2_complete",
+      "minigames": ["stroke_practice", "dessert_catch", "card_match", "order_challenge"]
+    },
+    {
+      "levelId": 4,
+      "name": "傳說",
+      "sceneName": "FlagshipStore",
+      "description": "華麗甜點旗艦店",
+      "kanaGroups": ["youon", "sokuon"],
+      "reward": "50音達人獎章",
+      "rewardSprite": "sprites/rewards/master_badge",
+      "unlockCondition": "level_3_complete",
+      "minigames": ["stroke_practice", "dessert_catch", "card_match", "order_challenge"]
+    }
+  ]
+}
