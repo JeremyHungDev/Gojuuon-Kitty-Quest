@@ -390,7 +390,7 @@ public class SceneBuilder : Editor
         gridLayout.constraintCount = 3;
 
         // Result Panel
-        var resultPanel = CreatePanel(canvas.transform, "ResultPanel", SemiTransparentBlack,
+        var resultPanel = CreatePanel(canvas.transform, "ResultPanel", OverlayDark,
             Vector2.zero, Vector2.zero);
         // Stretch result panel
         var rpRect = resultPanel.GetComponent<RectTransform>();
