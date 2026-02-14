@@ -195,14 +195,23 @@ public class SceneBuilder : Editor
         var bgObj = CreateFullScreenImage(canvas.transform, "Background", WarmCream);
         var bgImage = bgObj.GetComponent<Image>();
 
-        // === Title Banner ===
-        var titleBanner = CreatePanel(canvas.transform, "TitleBanner", new Color(1, 0.97f, 0.92f, 0.85f),
-            new Vector2(0, 340), new Vector2(520, 120));
+        // === Paw-shaped Title Sign ===
+        var pawSprite = GeneratePawSignSprite();
+        var pawSign = new GameObject("PawSign");
+        pawSign.transform.SetParent(canvas.transform, false);
+        var pawRect = pawSign.AddComponent<RectTransform>();
+        pawRect.anchoredPosition = new Vector2(0, 280);
+        pawRect.sizeDelta = new Vector2(360, 280);
+        var pawImage = pawSign.AddComponent<Image>();
+        pawImage.sprite = pawSprite;
+        pawImage.preserveAspect = true;
+        pawImage.raycastTarget = false;
 
-        CreateText(titleBanner.transform, "TitleText", "KITTY QUEST", 42, DarkBrown,
-            new Vector2(0, 15), new Vector2(480, 55));
-        CreateText(titleBanner.transform, "SubtitleText", "五十音甜點大冒險", 20, DarkBrown,
-            new Vector2(0, -30), new Vector2(400, 30));
+        // Title text on paw sign
+        CreateText(pawSign.transform, "TitleText", "KITTY\nQUEST", 38, new Color(1, 0.98f, 0.93f, 1),
+            new Vector2(0, -20), new Vector2(300, 120));
+        CreateText(pawSign.transform, "SubtitleText", "五十音甜點大冒險", 16, new Color(1, 0.97f, 0.9f, 0.9f),
+            new Vector2(0, -90), new Vector2(280, 25));
 
         // === Main Buttons (centered, lower area) ===
         var continueBtn = CreateStyledButton(canvas.transform, "ContinueButton", "CONTINUE",
@@ -211,12 +220,12 @@ public class SceneBuilder : Editor
         var startNewBtn = CreateStyledButton(canvas.transform, "StartNewGameButton", "START NEW GAME",
             new Vector2(0, -170), new Vector2(380, 65), 28);
 
-        // === Bottom Bar (Settings + Exit) ===
-        var settingsBtn = CreateStyledButton(canvas.transform, "SettingsButton", "SETTINGS",
-            new Vector2(-160, -420), new Vector2(180, 45), 18);
+        // === Bottom-Right Text Buttons (Settings + Exit) ===
+        var settingsBtn = CreateTextOnlyButton(canvas.transform, "SettingsButton", "SETTINGS",
+            new Vector2(340, -480), new Vector2(120, 35), 16);
 
-        var exitBtn = CreateStyledButton(canvas.transform, "ExitButton", "EXIT GAME",
-            new Vector2(160, -420), new Vector2(180, 45), 18);
+        var exitBtn = CreateTextOnlyButton(canvas.transform, "ExitButton", "EXIT GAME",
+            new Vector2(480, -480), new Vector2(130, 35), 16);
 
         // === New Game Panel (overlay, hidden by default) ===
         var newGameOverlay = CreateFullScreenImage(canvas.transform, "NewGamePanel", OverlayDark);
@@ -635,6 +644,128 @@ public class SceneBuilder : Editor
         text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
         return go;
+    }
+
+    private static GameObject CreateTextOnlyButton(Transform parent, string name, string label,
+        Vector2 position, Vector2 size, int fontSize)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+
+        var rect = go.AddComponent<RectTransform>();
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+
+        // Transparent background (needed for Button click area)
+        var image = go.AddComponent<Image>();
+        image.color = Color.clear;
+
+        var button = go.AddComponent<Button>();
+        var colors = button.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1, 1, 1, 0.5f);
+        colors.pressedColor = new Color(1, 1, 1, 0.3f);
+        button.colors = colors;
+
+        var textObj = new GameObject("Text");
+        textObj.transform.SetParent(go.transform, false);
+
+        var textRect = textObj.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        var text = textObj.AddComponent<Text>();
+        text.text = label;
+        text.fontSize = fontSize;
+        text.fontStyle = FontStyle.Bold;
+        text.color = DarkBrown;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        return go;
+    }
+
+    private static Sprite GeneratePawSignSprite()
+    {
+        int w = 512, h = 400;
+        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        var pixels = new Color[w * h];
+
+        Color clear = Color.clear;
+        Color wood = new Color(0.72f, 0.52f, 0.32f, 1f);       // Warm wood brown
+        Color woodLight = new Color(0.82f, 0.65f, 0.45f, 1f);  // Lighter wood center
+        Color border = new Color(0.45f, 0.3f, 0.15f, 1f);      // Dark border
+
+        // Clear all
+        for (int i = 0; i < pixels.Length; i++) pixels[i] = clear;
+
+        // Main body - large ellipse (the palm of the paw)
+        FillEllipse(pixels, w, h, w / 2, 110, 200, 105, woodLight, wood, border, 5);
+
+        // Three toe pads on top (cat ear bumps)
+        FillCircle(pixels, w, h, w / 2 - 140, 260, 60, woodLight, wood, border, 5);
+        FillCircle(pixels, w, h, w / 2, 295, 60, woodLight, wood, border, 5);
+        FillCircle(pixels, w, h, w / 2 + 140, 260, 60, woodLight, wood, border, 5);
+
+        tex.SetPixels(pixels);
+        tex.Apply();
+
+        // Save as asset
+        EnsureDirectory("Assets/Sprites");
+        byte[] png = tex.EncodeToPNG();
+        string path = "Assets/Sprites/paw_sign.png";
+        File.WriteAllBytes(path, png);
+        AssetDatabase.Refresh();
+
+        var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+        if (importer != null)
+        {
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spritePixelsPerUnit = 100;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.SaveAndReimport();
+        }
+
+        return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+    }
+
+    private static void FillEllipse(Color[] pixels, int texW, int texH,
+        int cx, int cy, int rx, int ry, Color inner, Color outer, Color border, int borderW)
+    {
+        for (int x = cx - rx - borderW; x <= cx + rx + borderW; x++)
+        {
+            for (int y = cy - ry - borderW; y <= cy + ry + borderW; y++)
+            {
+                if (x < 0 || x >= texW || y < 0 || y >= texH) continue;
+
+                float dx = (float)(x - cx) / rx;
+                float dy = (float)(y - cy) / ry;
+                float dist = dx * dx + dy * dy;
+
+                float dxB = (float)(x - cx) / (rx + borderW);
+                float dyB = (float)(y - cy) / (ry + borderW);
+                float distB = dxB * dxB + dyB * dyB;
+
+                if (dist <= 1f)
+                {
+                    // Gradient from inner (center) to outer (edge)
+                    float t = Mathf.Sqrt(dist);
+                    pixels[y * texW + x] = Color.Lerp(inner, outer, t * 0.6f);
+                }
+                else if (distB <= 1f)
+                {
+                    pixels[y * texW + x] = border;
+                }
+            }
+        }
+    }
+
+    private static void FillCircle(Color[] pixels, int texW, int texH,
+        int cx, int cy, int r, Color inner, Color outer, Color border, int borderW)
+    {
+        FillEllipse(pixels, texW, texH, cx, cy, r, r, inner, outer, border, borderW);
     }
 
     private static GameObject CreatePanel(Transform parent, string name, Color color,
