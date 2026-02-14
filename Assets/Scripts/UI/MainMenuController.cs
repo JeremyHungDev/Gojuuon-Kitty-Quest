@@ -35,7 +35,7 @@ public class MainMenuController : MonoBehaviour
 
         // Check if save exists to enable Continue
         var gm = GameManager.Instance;
-        bool hasSave = gm != null && gm.SaveSystem.HasSaveFile();
+        bool hasSave = gm != null && gm.SaveData != null && gm.SaveData.totalPlayTimeSeconds > 0;
         continueButton.interactable = hasSave;
 
         // Main buttons
@@ -84,7 +84,6 @@ public class MainMenuController : MonoBehaviour
     {
         PlayButtonSFX();
         var gm = GameManager.Instance;
-        gm.Load();
         gm.StateManager.ChangeState(GameState.StageSelect);
 
         if (UIManager.Instance != null)
