@@ -661,11 +661,6 @@ public class SceneBuilder : Editor
         image.color = Color.clear;
 
         var button = go.AddComponent<Button>();
-        var colors = button.colors;
-        colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1, 1, 1, 0.5f);
-        colors.pressedColor = new Color(1, 1, 1, 0.3f);
-        button.colors = colors;
 
         var textObj = new GameObject("Text");
         textObj.transform.SetParent(go.transform, false);
@@ -680,9 +675,22 @@ public class SceneBuilder : Editor
         text.text = label;
         text.fontSize = fontSize;
         text.fontStyle = FontStyle.Bold;
-        text.color = DarkBrown;
+        text.color = new Color(0.45f, 0.3f, 0.18f, 1f);
         text.alignment = TextAnchor.MiddleCenter;
         text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        // Shadow effect like reference image
+        var shadow = textObj.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0, 0, 0, 0.3f);
+        shadow.effectDistance = new Vector2(1, -1);
+
+        // Use text as target graphic so it highlights on hover
+        button.targetGraphic = text;
+        var colors = button.colors;
+        colors.normalColor = new Color(0.45f, 0.3f, 0.18f, 1f);
+        colors.highlightedColor = new Color(0.6f, 0.4f, 0.2f, 1f);
+        colors.pressedColor = new Color(0.35f, 0.2f, 0.1f, 1f);
+        button.colors = colors;
 
         return go;
     }
@@ -712,13 +720,16 @@ public class SceneBuilder : Editor
         tex.SetPixels(pixels);
         tex.Apply();
 
-        // Save as asset
+        // Save as asset with synchronous import
         EnsureDirectory("Assets/Sprites");
         byte[] png = tex.EncodeToPNG();
         string path = "Assets/Sprites/paw_sign.png";
         File.WriteAllBytes(path, png);
-        AssetDatabase.Refresh();
 
+        // Force synchronous import so asset is available immediately
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+
+        // Set texture type to Sprite
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer != null)
         {
@@ -728,7 +739,18 @@ public class SceneBuilder : Editor
             importer.SaveAndReimport();
         }
 
-        return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        if (sprite == null)
+        {
+            Debug.LogWarning("Paw sprite not loaded from asset, creating in-memory fallback");
+            sprite = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f));
+        }
+        else
+        {
+            Object.DestroyImmediate(tex);
+        }
+
+        return sprite;
     }
 
     private static void FillEllipse(Color[] pixels, int texW, int texH,
